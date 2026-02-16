@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "144637133530",
+    "project_id": "wishmart-d60f6",
+    "storage_bucket": "wishmart-d60f6.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:144637133530:android:edf08773a3bf72b88e5be3",
+        "android_client_info": {
+          "package_name": "com.example.wishmart"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "144637133530-jgc4blp4lhe0etnke3thp0h1mhp9sv17.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.wishmart",
+            "certificate_hash": "4fb40617af9e45cc69336ca0286284b947403a1b"
+          }
+        },
+        {
+          "client_id": "144637133530-2eek3f90ni8utmq9s8ul3d1mf1fbrct6.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyB-WYCIQ8tgSOLF4p1LMbQVnhSVbBYJPUE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "144637133530-2eek3f90ni8utmq9s8ul3d1mf1fbrct6.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
