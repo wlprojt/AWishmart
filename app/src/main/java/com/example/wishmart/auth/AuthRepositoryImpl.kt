@@ -1,37 +1,55 @@
 package com.example.wishmart.auth
 
 import android.content.SharedPreferences
-import retrofit2.HttpException
 import androidx.core.content.edit
+import retrofit2.HttpException
 
 class AuthRepositoryImpl(
     private val api: AuthApi,
     private val prefs: SharedPreferences
 ) : AuthRepository {
 
-    override suspend fun signUp(
-        name: String,
-        email: String,
-        password: String
-    ): AuthResult<Unit> {
+    private val KEY_TOKEN = "token"
+    private val KEY_EMAIL = "email"
+
+    override suspend fun signUp(name: String, email: String, password: String): AuthResult<Unit> {
         return try {
-            api.signUp(SignUpRequest(name, email, password))
+            api.register(SignUpRequest(name, email, password))
+            prefs.edit { putString(KEY_EMAIL, email) }
             AuthResult.OtpSent
         } catch (e: Exception) {
             AuthResult.UnknownError
         }
     }
 
-    override suspend fun verifyOtp(
-        email: String,
-        otp: String
-    ): AuthResult<Unit> {
+    override suspend fun verifyOtp(email: String, otp: String): AuthResult<Unit> {
         return try {
-            api.verifyOtp(VerifyOtpRequest(email, otp))
+            val e = email.trim()
+            val o = otp.trim()
+
+            val res = api.verifyOtp(VerifyOtpRequest(e, o)) // ✅ OtpResponse
+
+            // ✅ backend must send ok=true + token
+            if (!res.ok || res.token.isBlank()) {
+                return AuthResult.UnknownError
+            }
+
+            // ✅ user can be missing; don't crash
+            val finalEmail = res.user?.email?.trim().takeUnless { it.isNullOrBlank() } ?: e
+
+            prefs.edit {
+                putString(KEY_TOKEN, res.token)
+                putString(KEY_EMAIL, finalEmail)
+            }
+
             AuthResult.OtpVerified
         } catch (e: HttpException) {
-            AuthResult.Unauthorized
+            when (e.code()) {
+                400, 401 -> AuthResult.Unauthorized // invalid/expired OTP
+                else -> AuthResult.UnknownError
+            }
         } catch (e: Exception) {
+            e.printStackTrace()
             AuthResult.UnknownError
         }
     }
@@ -45,18 +63,13 @@ class AuthRepositoryImpl(
         }
     }
 
-
-    override suspend fun signIn(
-        email: String,
-        password: String
-    ): AuthResult<Unit> {
+    override suspend fun signIn(email: String, password: String): AuthResult<Unit> {
         return try {
-            val response = api.signIn(AuthRequest(email, password))
+            val res = api.login(AuthRequest(email, password))
 
-            // ✅ SAVE TOKEN CORRECTLY
             prefs.edit {
-                putString("jwt_token", response.token)
-                putString("email", response.user.email)
+                putString(KEY_TOKEN, res.token)
+                putString(KEY_EMAIL, res.user.email)
             }
 
             AuthResult.Success(Unit)
@@ -67,15 +80,11 @@ class AuthRepositoryImpl(
                 else -> AuthResult.UnknownError
             }
         } catch (e: Exception) {
-            e.printStackTrace()
             AuthResult.UnknownError
         }
     }
 
-    override fun getUserEmail(): String? {
-        return prefs.getString("email", null)
-    }
-
+    override fun getUserEmail(): String? = prefs.getString(KEY_EMAIL, null)
 
     override suspend fun sendResetLink(email: String): AuthResult<Unit> {
         return try {
@@ -86,21 +95,11 @@ class AuthRepositoryImpl(
         }
     }
 
-
-    override fun getToken(): String? {
-        return prefs.getString("jwt_token", null)
-    }
-
-
-
     override suspend fun authenticate(): AuthResult<Unit> {
         return try {
-            val token = prefs.getString("jwt_token", null)
-                ?: return AuthResult.Unauthorized
-
-            api.me("Bearer $token")
+            if (getToken().isNullOrBlank()) return AuthResult.Unauthorized
+            api.me() // ✅ interceptor adds Authorization
             AuthResult.Success(Unit)
-
         } catch (e: HttpException) {
             AuthResult.Unauthorized
         } catch (e: Exception) {
@@ -109,12 +108,12 @@ class AuthRepositoryImpl(
     }
 
     override suspend fun logout() {
-        prefs.edit { remove("jwt_token") }
+        prefs.edit { remove(KEY_TOKEN) }
     }
 
     override fun saveToken(token: String) {
-        prefs.edit {
-            putString("jwt_token", token)
-        }
+        prefs.edit { putString(KEY_TOKEN, token) }
     }
+
+    override fun getToken(): String? = prefs.getString(KEY_TOKEN, null)
 }

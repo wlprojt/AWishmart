@@ -57,7 +57,7 @@ fun ProfileScreen(
 
                     // Navigate back to login and clear back stack
                     navController.navigate("login") {
-                        popUpTo(navController.graph.startDestinationId) {
+                        popUpTo(0) {
                             inclusive = true
                         }
                     }

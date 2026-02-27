@@ -1,6 +1,7 @@
 package com.example.wishmart.auth
 
 sealed class AuthResult<out T> {
+    object GoogleSuccess : AuthResult<Nothing>()
     object OtpSent : AuthResult<Nothing>()
     object OtpVerified : AuthResult<Nothing>()
     object Unauthorized : AuthResult<Nothing>()

@@ -13,6 +13,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.*
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -45,12 +46,12 @@ fun LoginScreen(
     var passwordVisible by remember { mutableStateOf(false) }
     val state = viewModel.state
     val coroutineScope = rememberCoroutineScope()
-    var googleLoading by remember { mutableStateOf(false) }
+    var loading by remember { mutableStateOf(false) }
 
     // ---------------- Google Sign-In Setup ----------------
     val googleSignInOptions = remember {
         GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
-            .requestIdToken(context.getString(R.string.default_web_client_id))
+            .requestIdToken("144637133530-s3k05e25lkl88md8k3hnemfamm5fe0to.apps.googleusercontent.com")
             .requestEmail()
             .build()
     }
@@ -64,14 +65,14 @@ fun LoginScreen(
             val account = task.getResult(ApiException::class.java)
             val idToken = account.idToken
             if (idToken != null) {
-                googleLoading = true
+                loading = true
                 coroutineScope.launch {
                     try {
                         viewModel.onEvent(AuthUiEvent.GoogleSignIn(idToken))
                     } catch (e: Exception) {
                         Toast.makeText(context, "Backend login failed", Toast.LENGTH_SHORT).show()
                     } finally {
-                        googleLoading = false
+                        loading = false
                     }
                 }
             } else {
@@ -137,7 +138,7 @@ fun LoginScreen(
                     // Google Sign-In Button
                     Button(
                         onClick = { googleLauncher.launch(googleSignInClient.signInIntent) },
-                        enabled = !googleLoading,
+                        enabled = !loading,
                         modifier = Modifier.fillMaxWidth(),
                         colors = ButtonDefaults.buttonColors(
                             containerColor = Color(0xFF4B5563),
@@ -145,25 +146,44 @@ fun LoginScreen(
                         ),
                         shape = RoundedCornerShape(12.dp)
                     ) {
-                        if (googleLoading) CircularProgressIndicator(color = Color.White, modifier = Modifier.size(24.dp))
-                        else Row(
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Image(
-                                painter = painterResource(R.drawable.gicon),
-                                contentDescription = "Google Logo",
-                                modifier = Modifier.size(25.dp)
+                        if (loading) {
+                            CircularProgressIndicator(
+                                color = Color.White,
+                                modifier = Modifier.size(24.dp)
                             )
-                            Spacer(modifier = Modifier.width(8.dp))
-                            Text("Sign in with Google", color = Color.White)
+                        } else {
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Image(
+                                    painter = painterResource(R.drawable.gicon),
+                                    contentDescription = "Google Logo",
+                                    modifier = Modifier
+                                        .padding(horizontal = 6.dp)
+                                        .size(25.dp)
+                                )
+                                Text(
+                                    text = "Sign in with Google",
+                                    color = Color.White,
+                                    fontSize = 16.sp
+                                )
+                            }
                         }
                     }
 
                     Spacer(modifier = Modifier.height(20.dp))
                     Row(verticalAlignment = Alignment.CenterVertically) {
-                        Divider(modifier = Modifier.weight(1f))
+                        HorizontalDivider(
+                            modifier = Modifier.weight(1f),
+                            thickness = DividerDefaults.Thickness,
+                            color = DividerDefaults.color
+                        )
                         Text("  OR  ", color = Color.Gray)
-                        Divider(modifier = Modifier.weight(1f))
+                        HorizontalDivider(
+                            modifier = Modifier.weight(1f),
+                            thickness = DividerDefaults.Thickness,
+                            color = DividerDefaults.color
+                        )
                     }
                     Spacer(modifier = Modifier.height(20.dp))
 
@@ -173,6 +193,15 @@ fun LoginScreen(
                         onValueChange = { viewModel.onEvent(AuthUiEvent.SignInUsernameChanged(it)) },
                         placeholder = { Text("Email") },
                         modifier = Modifier.fillMaxWidth(),
+                        colors = TextFieldDefaults.colors(
+                            focusedContainerColor = Color.White,
+                            unfocusedContainerColor = Color.White,
+                            focusedIndicatorColor = Color.DarkGray,
+                            unfocusedIndicatorColor = Color.Gray,
+                            focusedTextColor = Color.DarkGray,
+                            unfocusedTextColor = Color.Gray,
+                            cursorColor = Color.DarkGray
+                        ),
                         singleLine = true
                     )
                     Spacer(modifier = Modifier.height(16.dp))
@@ -183,6 +212,15 @@ fun LoginScreen(
                         onValueChange = { viewModel.onEvent(AuthUiEvent.SignInPasswordChanged(it)) },
                         placeholder = { Text("Password") },
                         modifier = Modifier.fillMaxWidth(),
+                        colors = TextFieldDefaults.colors(
+                            focusedContainerColor = Color.White,
+                            unfocusedContainerColor = Color.White,
+                            focusedIndicatorColor = Color.DarkGray,
+                            unfocusedIndicatorColor = Color.Gray,
+                            focusedTextColor = Color.DarkGray,
+                            unfocusedTextColor = Color.Gray,
+                            cursorColor = Color.DarkGray
+                        ),
                         singleLine = true,
                         visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
                         trailingIcon = {
@@ -194,7 +232,17 @@ fun LoginScreen(
                             }
                         }
                     )
-                    Spacer(modifier = Modifier.height(12.dp))
+
+                    TextButton(
+                        onClick = { navController.navigate("forgot") },
+                        modifier = Modifier
+                            .align(Alignment.End)
+                            .offset(x = 0.dp, y = (-8).dp)
+                    ) {
+                        Text("Forgot Password?", color = Color(0xFF2563EB))
+                    }
+
+//                    Spacer(modifier = Modifier.height(12.dp))
 
                     // Login Button
                     Button(

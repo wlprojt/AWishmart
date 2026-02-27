@@ -29,7 +29,25 @@ data class ForgotPasswordRequest(
     val email: String
 )
 
-data class AuthResponse(
-    val token: String
+data class GoogleRequest(val idToken: String)
+
+data class TokenResponse(
+    val token: String,
+    val user: UserDto
 )
 
+data class UserDto(
+    val id: String,
+    val email: String
+)
+
+data class OtpResponse(
+    val ok: Boolean,
+    val token: String,
+    val user: UserDto? = null
+)
+
+
+data class OkResponse(
+    val ok: Boolean = true
+)

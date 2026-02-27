@@ -15,7 +15,6 @@ interface AuthRepository {
 
     suspend fun resendOtp(email: String): AuthResult<Unit>
 
-
     suspend fun signIn(
         email: String,
         password: String
@@ -23,15 +22,13 @@ interface AuthRepository {
 
     fun getUserEmail(): String?
 
-
     suspend fun sendResetLink(email: String): AuthResult<Unit>
-
 
     suspend fun authenticate(): AuthResult<Unit>
 
     suspend fun logout()
 
-    // 🔑 ADD THESE
+    // 🔑 token helpers
     fun saveToken(token: String)
     fun getToken(): String?
 }

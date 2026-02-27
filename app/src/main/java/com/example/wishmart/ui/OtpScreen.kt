@@ -17,7 +17,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
-import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import com.example.wishmart.auth.AuthResult
 import com.example.wishmart.viewmodel.MainViewModel
@@ -30,7 +29,7 @@ fun OtpScreen(
 ) {
     val context = LocalContext.current
     val state = viewModel.state
-
+    val savedEmail by viewModel.email.collectAsState()
     var otp by remember { mutableStateOf("") }
 
     // 🔁 Listen to OTP verification result
@@ -38,40 +37,19 @@ fun OtpScreen(
         viewModel.authResults.collectLatest { result ->
             when (result) {
                 AuthResult.OtpVerified -> {
-                    Toast.makeText(
-                        context,
-                        "OTP Verified.",
-                        Toast.LENGTH_LONG
-                    ).show()
-
-//                    val email = viewModel.email.value ?: state.signUpUsername
-
-                    val email = viewModel.email.value
-
-                    if (!email.isNullOrEmpty()) {
-
-                        navController.navigate("home") {
-                            popUpTo("login") { inclusive = true }
-                            launchSingleTop = true
-                        }
+                    Toast.makeText(context, "OTP Verified", Toast.LENGTH_LONG).show()
+                    navController.navigate("home") {
+                        popUpTo(0) { inclusive = true }
+                        launchSingleTop = true
                     }
-
                 }
 
                 AuthResult.Unauthorized -> {
-                    Toast.makeText(
-                        context,
-                        "Invalid OTP",
-                        Toast.LENGTH_LONG
-                    ).show()
+                    Toast.makeText(context, "Invalid OTP", Toast.LENGTH_LONG).show()
                 }
 
                 AuthResult.UnknownError -> {
-                    Toast.makeText(
-                        context,
-                        "Something went wrong",
-                        Toast.LENGTH_LONG
-                    ).show()
+                    Toast.makeText(context, "Something went wrong", Toast.LENGTH_LONG).show()
                 }
 
                 else -> Unit
@@ -138,7 +116,9 @@ fun OtpScreen(
                             unfocusedIndicatorColor = Color.Gray,
                             focusedTextColor = Color.DarkGray,
                             unfocusedTextColor = Color.Gray,
-                            cursorColor = Color.DarkGray
+                            cursorColor = Color.DarkGray,
+                            focusedLabelColor = Color.DarkGray,
+                            unfocusedLabelColor = Color.Gray
                         ),
                         singleLine = true,
                         keyboardOptions = KeyboardOptions(
@@ -151,11 +131,8 @@ fun OtpScreen(
 
                     TextButton(
                         onClick = {
-                            viewModel.onEvent(
-                                AuthUiEvent.ResendOtp(
-                                    email = state.signUpUsername
-                                )
-                            )
+                            val email = savedEmail?.trim().orEmpty()
+                            viewModel.onEvent(AuthUiEvent.ResendOtp(email))
                         },
                         modifier = Modifier.align(Alignment.End)
                     ) {
@@ -164,15 +141,11 @@ fun OtpScreen(
 
 //                    Spacer(modifier = Modifier.height(20.dp))
 
-                    Button(
-                        onClick = {
-                            viewModel.onEvent(
-                                AuthUiEvent.VerifyOtp(
-                                    email = state.signUpUsername,
-                                    otp = otp
-                                )
-                            )
-                        },
+                    Button(onClick = {
+                        val email = savedEmail?.trim().orEmpty()
+                        val cleanOtp = otp.trim()
+                        viewModel.onEvent(AuthUiEvent.VerifyOtp(email, cleanOtp))
+                    },
                         enabled = otp.length == 6 && !state.isLoading,
                         modifier = Modifier
                             .fillMaxWidth()

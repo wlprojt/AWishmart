@@ -2,14 +2,13 @@ package com.example.wishmart.viewmodel
 
 import com.example.wishmart.auth.AuthRepository
 import com.example.wishmart.auth.AuthResult
-import android.content.SharedPreferences
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.wishmart.products.sale.BackendApi
-import com.example.wishmart.products.sale.GoogleLoginRequest
+import com.example.wishmart.auth.AuthApi
+import com.example.wishmart.auth.GoogleRequest
 import com.example.wishmart.ui.AuthState
 import com.example.wishmart.ui.AuthUiEvent
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -18,16 +17,13 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
-import org.json.JSONObject
 import javax.inject.Inject
-import android.util.Base64
 
 
 @HiltViewModel
 class MainViewModel @Inject constructor(
-    private val prefs: SharedPreferences,
     private val repository: AuthRepository,
-    private val backendApi: BackendApi // Add your backend API
+    private val authApi: AuthApi // ✅ use AuthApi for google too
 ) : ViewModel() {
 
     private val _isLoggedIn = MutableStateFlow(false)
@@ -39,29 +35,82 @@ class MainViewModel @Inject constructor(
     var state by mutableStateOf(AuthState())
         private set
 
-    private val resultChannel = Channel<AuthResult<Unit>>(Channel.BUFFERED)
+    private val resultChannel = Channel<AuthResult<*>>(Channel.BUFFERED)
     val authResults = resultChannel.receiveAsFlow()
 
     init {
-        val token = prefs.getString("jwt_token", null)
-
-        _isLoggedIn.value = !token.isNullOrEmpty()
-
+        _isLoggedIn.value = !repository.getToken().isNullOrBlank()
         _email.value = repository.getUserEmail()
-
     }
-
 
     fun onEvent(event: AuthUiEvent) {
         when (event) {
             is AuthUiEvent.SignIn -> signIn()
+            is AuthUiEvent.SignUp -> signUp()
             is AuthUiEvent.GoogleSignIn -> googleSignIn(event.idToken)
-            is AuthUiEvent.SignInUsernameChanged -> state = state.copy(signInUsername = event.value)
-            is AuthUiEvent.SignInPasswordChanged -> state = state.copy(signInPassword = event.value)
+
+            is AuthUiEvent.SignInUsernameChanged ->
+                state = state.copy(signInUsername = event.value)
+
+            is AuthUiEvent.SignInPasswordChanged ->
+                state = state.copy(signInPassword = event.value)
+
+            is AuthUiEvent.SignUpNameChanged ->
+                state = state.copy(signUpName = event.value)
+
+            is AuthUiEvent.SignUpUsernameChanged ->
+                state = state.copy(signUpUsername = event.value)
+
+            is AuthUiEvent.SignUpPasswordChanged ->
+                state = state.copy(signUpPassword = event.value)
+
+            is AuthUiEvent.VerifyOtp -> verifyOtp(event.email, event.otp)
+            is AuthUiEvent.ResendOtp -> resendOtp(event.email)
             else -> {}
         }
     }
 
+    private fun signUp() = viewModelScope.launch {
+        state = state.copy(isLoading = true)
+
+        val result = repository.signUp(
+            name = state.signUpName,
+            email = state.signUpUsername,
+            password = state.signUpPassword
+        )
+
+        if (result is AuthResult.OtpSent) {
+            _email.value = state.signUpUsername  // ✅ OTP screen can use this
+        }
+
+        resultChannel.send(result)
+        state = state.copy(isLoading = false)
+    }
+
+    private fun verifyOtp(email: String, otp: String) = viewModelScope.launch {
+        state = state.copy(isLoading = true)
+
+        val finalEmail = email.trim().ifBlank { repository.getUserEmail().orEmpty() }
+        val cleanOtp = otp.trim()
+
+        val result = repository.verifyOtp(finalEmail, cleanOtp)
+
+        if (result == AuthResult.OtpVerified) {
+            _isLoggedIn.value = true
+            _email.value = repository.getUserEmail()
+
+            val t = repository.getToken()
+            android.util.Log.d("OTP", "after verify token=${t?.take(15)}")
+        }
+
+        resultChannel.send(result)
+        state = state.copy(isLoading = false)
+    }
+
+    private fun resendOtp(email: String) = viewModelScope.launch {
+        val result = repository.resendOtp(email)
+        resultChannel.send(result)
+    }
 
     private fun signIn() = viewModelScope.launch {
         state = state.copy(isLoading = true)
@@ -80,44 +129,30 @@ class MainViewModel @Inject constructor(
         state = state.copy(isLoading = false)
     }
 
-    private fun extractEmailFromJwt(token: String): String? {
-        return try {
-            val parts = token.split(".")
-            if (parts.size != 3) return null
-
-            val payload = String(Base64.decode(parts[1], Base64.URL_SAFE))
-            val json = JSONObject(payload)
-            json.optString("email")
-        } catch (e: Exception) {
-            null
-        }
-    }
-
-    /** ---------------- GOOGLE LOGIN ---------------- */
+    /** ✅ GOOGLE LOGIN (call /api/auth/google, not /google-login) */
     private fun googleSignIn(idToken: String) = viewModelScope.launch {
         state = state.copy(isLoading = true)
 
         try {
-            val response = backendApi.googleLogin(GoogleLoginRequest(idToken))
-            val jwtToken = response.token
+            // Add this in AuthApi:
+            // @POST("api/auth/google") suspend fun google(@Body req: GoogleRequest): TokenResponse
+            val res = authApi.google(GoogleRequest(idToken))
 
-            prefs.edit().putString("jwt_token", jwtToken).apply()
+            repository.saveToken(res.token)
+            // save email too if you want
+            // prefs or repository method; easiest:
+            // (optional) repository can store email inside saveToken flow
 
             _isLoggedIn.value = true
-
-            // ✅ Use backend response directly
-            _email.value = response.user.email
+            _email.value = res.user.email
 
             resultChannel.send(AuthResult.Success(Unit))
-
         } catch (e: Exception) {
             resultChannel.send(AuthResult.UnknownError)
         } finally {
             state = state.copy(isLoading = false)
         }
     }
-
-
 
     fun logout() = viewModelScope.launch {
         repository.logout()

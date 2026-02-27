@@ -83,7 +83,7 @@ fun MainScreen(viewModel: MainViewModel) {
 
             ProfileScreen(
                 navController = navController,
-                viewModel = viewModel,
+                viewModel = viewModel
             )
         }
 

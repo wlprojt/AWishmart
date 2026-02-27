@@ -53,7 +53,6 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.example.wishmart.R
 import com.example.wishmart.auth.AuthResult
@@ -61,92 +60,82 @@ import com.example.wishmart.viewmodel.MainViewModel
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.android.gms.common.api.ApiException
-import com.google.firebase.Firebase
-import com.google.firebase.auth.GoogleAuthProvider
-import com.google.firebase.auth.auth
 import kotlinx.coroutines.flow.collectLatest
 
 @Composable
 fun SignupScreen(navController: NavController, viewModel: MainViewModel) {
+
     val context = LocalContext.current
-    var loading by remember { mutableStateOf(false) }
-    var name by remember { mutableStateOf("") }
-    var email by remember { mutableStateOf("") }
-    var password by remember { mutableStateOf("") }
-    var passwordVisible by remember { mutableStateOf(false) }
     val state = viewModel.state
+    var googleLoading by remember { mutableStateOf(false) }
+    var passwordVisible by remember { mutableStateOf(false) }
 
+    /* ---------------- GOOGLE CONFIG ---------------- */
 
-    val googleSignInOptions = remember {
+    val googleOptions = remember {
         GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
-            .requestIdToken(context.getString(R.string.default_web_client_id))
+            .requestIdToken("144637133530-s3k05e25lkl88md8k3hnemfamm5fe0to.apps.googleusercontent.com")
             .requestEmail()
             .build()
     }
 
-    val googleSignInClient = remember {
-        GoogleSignIn.getClient(context, googleSignInOptions)
+    val googleClient = remember {
+        GoogleSignIn.getClient(context, googleOptions)
     }
 
     val launcher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.StartActivityForResult()
+        ActivityResultContracts.StartActivityForResult()
     ) { result ->
         val task = GoogleSignIn.getSignedInAccountFromIntent(result.data)
         try {
             val account = task.getResult(ApiException::class.java)
-            val credential = GoogleAuthProvider.getCredential(account.idToken, null)
+            val idToken = account.idToken
 
-            Firebase.auth.signInWithCredential(credential)
-                .addOnCompleteListener { authTask ->
-                    loading = false
-                    if (authTask.isSuccessful) {
-                        val email = Firebase.auth.currentUser?.email
-                        if (email != null) {
-                            navController.navigate("home") {
-                                popUpTo("login") { inclusive = true }
-                            }
-                            Toast.makeText(context, "Login Successful", Toast.LENGTH_SHORT).show()
-                        } else {
-                            Toast.makeText(context, "Failed to get email", Toast.LENGTH_SHORT).show()
-                        }
-                    } else {
-                        Toast.makeText(context, "Login Failed", Toast.LENGTH_SHORT).show()
-                    }
-                }
+            if (idToken != null) {
+                viewModel.onEvent(AuthUiEvent.GoogleSignIn(idToken))
+            } else {
+                Toast.makeText(context, "Failed to get ID Token", Toast.LENGTH_SHORT).show()
+            }
         } catch (e: ApiException) {
-            loading = false
-            Toast.makeText(context, "Google Sign-In failed", Toast.LENGTH_SHORT).show()
+            googleLoading = false
+            Toast.makeText(context, "Google Sign Up Failed", Toast.LENGTH_SHORT).show()
         }
     }
 
-    // 🔁 Listen to signup result
+    /* ---------------- AUTH RESULT LISTENER ---------------- */
+
     LaunchedEffect(Unit) {
         viewModel.authResults.collectLatest { result ->
+
+            googleLoading = false
+
             when (result) {
-                AuthResult.OtpSent -> {
-                    navController.navigate("otp")
+
+                is AuthResult.OtpSent -> {
+                    navController.navigate("otp") {
+                        popUpTo("signup") { inclusive = true }
+                    }
                 }
 
-                AuthResult.Unauthorized -> {
-                    Toast.makeText(
-                        context,
-                        "Signup failed",
-                        Toast.LENGTH_LONG
-                    ).show()
+                is AuthResult.GoogleSuccess -> {
+                    navController.navigate("home") {
+                        popUpTo(0) { inclusive = true }
+                    }
                 }
 
-                AuthResult.UnknownError -> {
-                    Toast.makeText(
-                        context,
-                        "Something went wrong",
-                        Toast.LENGTH_LONG
-                    ).show()
+                is AuthResult.Unauthorized -> {
+                    Toast.makeText(context, "Signup failed", Toast.LENGTH_LONG).show()
+                }
+
+                is AuthResult.UnknownError -> {
+                    Toast.makeText(context, "Something went wrong", Toast.LENGTH_LONG).show()
                 }
 
                 else -> Unit
             }
         }
     }
+
 
     // Main UI
     Box(
@@ -202,10 +191,10 @@ fun SignupScreen(navController: NavController, viewModel: MainViewModel) {
                     // Google Button
                     Button(
                         onClick = {
-                            loading = true
-                            launcher.launch(googleSignInClient.signInIntent)
+                            googleLoading = true
+                            launcher.launch(googleClient.signInIntent)
                         },
-                        enabled = !loading,
+                        enabled = !googleLoading,
                         modifier = Modifier.fillMaxWidth(),
                         colors = ButtonDefaults.buttonColors(
                             containerColor = Color(0xFF4B5563),
@@ -215,7 +204,7 @@ fun SignupScreen(navController: NavController, viewModel: MainViewModel) {
                         ),
                         shape = RoundedCornerShape(12.dp)
                     ) {
-                        if (loading) {
+                        if (googleLoading) {
                             CircularProgressIndicator(
                                 color = Color.White,
                                 modifier = Modifier.size(24.dp)
@@ -340,22 +329,9 @@ fun SignupScreen(navController: NavController, viewModel: MainViewModel) {
                         }
                     )
 
-//                Spacer(modifier = Modifier.height(4.dp))
-
-                    // Forgot Password
-//                TextButton(
-//                    onClick = { /* Navigate to forgot */ },
-//                    modifier = Modifier.align(Alignment.End)
-//                ) {
-//                    Text(
-//                        text = "Forgot password?",
-//                        color = Color(0xFF2563EB)
-//                    )
-//                }
-
                     Spacer(modifier = Modifier.height(20.dp))
 
-                    // Login Button
+                    // Sign Up Button
                     Button(
                         onClick = { viewModel.onEvent(AuthUiEvent.SignUp) },
                         modifier = Modifier
