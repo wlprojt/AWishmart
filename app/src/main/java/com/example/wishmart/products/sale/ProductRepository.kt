@@ -3,7 +3,7 @@ package com.example.wishmart.products.sale
 import javax.inject.Inject
 
 class ProductRepository @Inject constructor(
-    private val api: ProductApi
+    private val api: ProductsApi
 ) {
     suspend fun getSaleProducts(): List<ProductResponse> {
         return api.getSaleProducts()

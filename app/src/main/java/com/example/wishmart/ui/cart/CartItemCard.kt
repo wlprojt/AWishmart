@@ -42,6 +42,7 @@ fun CartItemCard(
 
     Card(
         shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(Color.White),
         elevation = CardDefaults.cardElevation(6.dp)
     ) {
         Row(
@@ -66,14 +67,16 @@ fun CartItemCard(
                 Text(
                     text = item.title,
                     fontWeight = FontWeight.SemiBold,
-                    maxLines = 2
+                    maxLines = 2,
+                    color = Color.DarkGray
                 )
 
                 Spacer(modifier = Modifier.height(6.dp))
 
                 Text(
                     text = "$${finalPrice}",
-                    fontWeight = FontWeight.Bold
+                    fontWeight = FontWeight.Bold,
+                    color = Color.DarkGray
                 )
 
                 Spacer(modifier = Modifier.height(10.dp))
@@ -84,19 +87,28 @@ fun CartItemCard(
                         onClick = onDecrease,
                         enabled = item.qty > 1
                     ) {
-                        Icon(Icons.Default.Remove, null)
+                        Icon(
+                            imageVector = Icons.Default.Remove,
+                            contentDescription = null,
+                            tint = Color.DarkGray
+                        )
                     }
 
                     Text(
                         text = item.qty.toString(),
-                        fontWeight = FontWeight.Medium
+                        fontWeight = FontWeight.Medium,
+                        color = Color.DarkGray
                     )
 
                     IconButton(
                         onClick = onIncrease,
                         enabled = item.qty < item.stock
                     ) {
-                        Icon(Icons.Default.Add, null)
+                        Icon(
+                            imageVector = Icons.Default.Add,
+                            contentDescription =null,
+                            tint = Color.DarkGray
+                        )
                     }
                 }
 

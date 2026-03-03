@@ -86,6 +86,10 @@ class AuthRepositoryImpl(
 
     override fun getUserEmail(): String? = prefs.getString(KEY_EMAIL, null)
 
+    override fun saveUserEmail(email: String) {
+        prefs.edit { putString(KEY_EMAIL, email.trim()) }
+    }
+
     override suspend fun sendResetLink(email: String): AuthResult<Unit> {
         return try {
             api.forgotPassword(ForgotPasswordRequest(email))
@@ -108,7 +112,10 @@ class AuthRepositoryImpl(
     }
 
     override suspend fun logout() {
-        prefs.edit { remove(KEY_TOKEN) }
+        prefs.edit {
+            remove(KEY_TOKEN)
+            remove(KEY_EMAIL)
+        }
     }
 
     override fun saveToken(token: String) {

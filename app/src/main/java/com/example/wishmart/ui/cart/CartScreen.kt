@@ -4,6 +4,8 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBackIosNew
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -12,6 +14,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
+import com.example.wishmart.ui.WishMartBottomBar
 import com.example.wishmart.viewmodel.CartUiState
 import com.example.wishmart.viewmodel.CartViewModel
 
@@ -27,8 +30,25 @@ fun CartScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("My Cart") }
+                title = { Text("My Cart") },
+                colors = TopAppBarDefaults.topAppBarColors(Color(0xFF2563EB)),
+                navigationIcon = {
+                    IconButton(
+                        onClick = {
+                            navController.popBackStack()
+                        }
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.ArrowBackIosNew,
+                            contentDescription = "Back",
+                            tint = Color.White
+                        )
+                    }
+                }
             )
+        },
+        bottomBar = {
+            WishMartBottomBar(navController)
         }
     ) { padding ->
 
@@ -38,7 +58,8 @@ fun CartScreen(
                 Box(
                     modifier = Modifier
                         .fillMaxSize()
-                        .padding(padding),
+                        .padding(padding)
+                        .background(Color(0xFFF2F2F2)),
                     contentAlignment = Alignment.Center
                 ) {
                     CircularProgressIndicator()
@@ -50,7 +71,8 @@ fun CartScreen(
                 Box(
                     modifier = Modifier
                         .fillMaxSize()
-                        .padding(padding),
+                        .padding(padding)
+                        .background(Color(0xFFF2F2F2)),
                     contentAlignment = Alignment.Center
                 ) {
                     Text(text = message)
@@ -70,7 +92,7 @@ fun CartScreen(
                         modifier = Modifier
                             .fillMaxSize()
                             .padding(padding)
-                            .background(Color(0xFFF5F5F5))
+                            .background(Color(0xFFF2F2F2))
                     ) {
 
                         LazyColumn(

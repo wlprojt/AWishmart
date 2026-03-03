@@ -1,4 +1,4 @@
-package com.example.wishmart.ui
+package com.example.wishmart.ui.home
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -21,6 +21,13 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.example.wishmart.R
+import com.example.wishmart.ui.BrandsDealCard
+import com.example.wishmart.ui.CategorySection
+import com.example.wishmart.ui.PromoBannerSection
+import com.example.wishmart.ui.ShopByCategoryCard
+import com.example.wishmart.ui.TodayBestDealSection
+import com.example.wishmart.ui.TopBrandsSection
+import com.example.wishmart.ui.WishMartBottomBar
 import com.example.wishmart.ui.category.AirConditionerSection
 import com.example.wishmart.ui.category.AudioVideoSection
 import com.example.wishmart.ui.category.GadgetsSection
@@ -71,7 +78,7 @@ fun HomeScreen(
                 actions = {
                     IconButton(
                         onClick = {
-                            navController.navigate("home")
+                            navController.navigate("search")
                         }
                     ) {
                         Icon(
@@ -152,23 +159,25 @@ fun HomeScreen(
                                 color = Color(0xFF2563EB),
                                 fontWeight = FontWeight.SemiBold,
                                 modifier = Modifier.clickable {
-                                    // TODO: Navigate to product page
+                                    navController.navigate(
+                                        "allProducts?category=${android.net.Uri.encode("Audio & Video")}&page=1"
+                                    )
                                 }
                             )
                         }
                     }
                 }
                 item {
-                    ShopByCategoryCard()
+                    ShopByCategoryCard(navController)
                 }
                 item {
-                    PromoBannerSection()
+                    PromoBannerSection(navController)
                 }
                 item {
                     TodayBestDealSection(navController)
                 }
                 item {
-                    CategorySection()
+                    CategorySection(navController)
                 }
                 item {
                     AudioVideoSection(navController)
@@ -204,7 +213,7 @@ fun HomeScreen(
                     GadgetsSection(navController)
                 }
                 item {
-                    BrandsDealCard()
+                    BrandsDealCard(navController)
                 }
                 item {
                     TopBrandsSection()

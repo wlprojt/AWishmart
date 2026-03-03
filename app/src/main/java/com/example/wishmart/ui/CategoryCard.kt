@@ -2,6 +2,7 @@ package com.example.wishmart.ui
 
 
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -23,9 +24,11 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavController
 
 @Composable
 fun CategoryCard(
+    navController: NavController,
     title: String,
     priceText: String,
     backgroundColor: Color,
@@ -74,7 +77,12 @@ fun CategoryCard(
                 Text(
                     text = "Shop now",
                     color = Color(0xFF2563EB), // blue
-                    fontWeight = FontWeight.Medium
+                    fontWeight = FontWeight.Medium,
+                    modifier = Modifier.clickable {
+                        navController.navigate(
+                            "allProducts?category=${android.net.Uri.encode("Gadgets")}&page=1"
+                        )
+                    }
                 )
             }
 

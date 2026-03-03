@@ -1,15 +1,19 @@
-package com.example.wishmart.ui
+package com.example.wishmart.ui.profile
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBackIosNew
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import com.example.wishmart.ui.WishMartBottomBar
 import com.example.wishmart.viewmodel.MainViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -23,7 +27,26 @@ fun ProfileScreen(
 
     Scaffold(
         topBar = {
-            TopAppBar(title = { Text("WishMart") })
+            TopAppBar(
+                title = { Text("Profile") },
+                colors = TopAppBarDefaults.topAppBarColors(Color(0xFF2563EB)),
+                navigationIcon = {
+                    IconButton(
+                        onClick = {
+                            navController.popBackStack()
+                        }
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.ArrowBackIosNew,
+                            contentDescription = "Back",
+                            tint = Color.White
+                        )
+                    }
+                }
+            )
+        },
+        bottomBar = {
+            WishMartBottomBar(navController)
         }
     ) { padding ->
 
@@ -31,21 +54,23 @@ fun ProfileScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(padding)
-                .padding(16.dp),
+            .background(Color(0xFFF2F2F2)),
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
 
             Text(
                 text = "Welcome 👋",
-                style = MaterialTheme.typography.headlineMedium
+                style = MaterialTheme.typography.headlineMedium,
+                color = Color.DarkGray
             )
 
             Spacer(modifier = Modifier.height(8.dp))
 
             Text(
                 text = "Email: $email",
-                style = MaterialTheme.typography.bodyLarge
+                style = MaterialTheme.typography.bodyLarge,
+                color = Color.DarkGray
             )
 
             Spacer(modifier = Modifier.height(24.dp))
@@ -61,9 +86,16 @@ fun ProfileScreen(
                             inclusive = true
                         }
                     }
-                }
+                },
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = Color(0xFF2563EB),
+                    contentColor = Color.White
+                )
             ) {
-                Text("Logout")
+                Text(
+                    text ="Logout",
+                    color = Color.White
+                )
             }
         }
     }

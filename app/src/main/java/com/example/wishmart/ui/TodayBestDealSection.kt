@@ -1,6 +1,7 @@
 package com.example.wishmart.ui
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -51,7 +52,11 @@ fun TodayBestDealSection(navController: NavController, viewModel: DealViewModel 
 
             Text(
                 text = "See more",
-                modifier = Modifier.padding(14.dp),
+                modifier = Modifier
+                    .padding(14.dp)
+                    .clickable {
+                        navController.navigate("sale")
+                    },
                 color = Color(0xFF2563EB)
             )
         }

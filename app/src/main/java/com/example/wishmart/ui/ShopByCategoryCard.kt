@@ -20,10 +20,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavController
 import com.example.wishmart.R
 
 @Composable
-fun ShopByCategoryCard() {
+fun ShopByCategoryCard(navController: NavController) {
 
     val categories = listOf(
         Category("Air Conditioner", 4, R.drawable.ac),
@@ -68,7 +69,7 @@ fun ShopByCategoryCard() {
                 modifier = Modifier.heightIn(max = 400.dp)
             ) {
                 items(categories) { category ->
-                    CategoryItem(category)
+                    CategoryItem(category, navController)
                 }
             }
         }

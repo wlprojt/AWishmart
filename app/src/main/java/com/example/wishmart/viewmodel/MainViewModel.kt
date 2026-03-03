@@ -134,14 +134,10 @@ class MainViewModel @Inject constructor(
         state = state.copy(isLoading = true)
 
         try {
-            // Add this in AuthApi:
-            // @POST("api/auth/google") suspend fun google(@Body req: GoogleRequest): TokenResponse
             val res = authApi.google(GoogleRequest(idToken))
 
             repository.saveToken(res.token)
-            // save email too if you want
-            // prefs or repository method; easiest:
-            // (optional) repository can store email inside saveToken flow
+            repository.saveUserEmail(res.user.email)
 
             _isLoggedIn.value = true
             _email.value = res.user.email

@@ -12,10 +12,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavController
 import com.example.wishmart.R
 
 @Composable
-fun CategorySection() {
+fun CategorySection(navController: NavController) {
 
     Column (
         modifier = Modifier
@@ -25,6 +26,7 @@ fun CategorySection() {
     ) {
 
         CategoryCard(
+            navController,
             title = "Wireless\nheadphones",
             priceText = "Starting at $49",
             backgroundColor = Color(0xFFECEFF1),
@@ -32,6 +34,7 @@ fun CategorySection() {
         )
 
         CategoryCard(
+            navController,
             title = "Grooming",
             priceText = "Starting at $49",
             backgroundColor = Color(0xFFECEFF1),
@@ -39,6 +42,7 @@ fun CategorySection() {
         )
 
         CategoryCard(
+            navController,
             title = "Video games",
             priceText = "Starting at $49",
             backgroundColor = Color(0xFFF5E6C8),

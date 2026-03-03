@@ -23,5 +23,9 @@ class CartRepository @Inject constructor(
     suspend fun removeItem(id: String) {
         api.removeItem(RemoveItemRequest(id))
     }
+
+    suspend fun clearCart() {
+        api.clearCart()
+    }
 }
 

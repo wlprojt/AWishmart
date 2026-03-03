@@ -22,6 +22,8 @@ interface AuthRepository {
 
     fun getUserEmail(): String?
 
+    fun saveUserEmail(email: String)
+
     suspend fun sendResetLink(email: String): AuthResult<Unit>
 
     suspend fun authenticate(): AuthResult<Unit>

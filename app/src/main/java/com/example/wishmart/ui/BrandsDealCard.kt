@@ -24,11 +24,12 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import com.example.wishmart.R
 
 @Composable
-fun BrandsDealCard() {
+fun BrandsDealCard(navController: NavController) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -89,7 +90,11 @@ fun BrandsDealCard() {
                     text = "Shop now",
                     color = Color(0xFF2563EB),
                     fontWeight = FontWeight.SemiBold,
-                    modifier = Modifier.clickable {  }
+                    modifier = Modifier.clickable {
+                        navController.navigate(
+                            "allProducts?category=${android.net.Uri.encode("Home Appliances")}&page=1"
+                        )
+                    }
                 )
             }
 

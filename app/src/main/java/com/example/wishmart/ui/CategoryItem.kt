@@ -17,6 +17,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavController
 
 data class Category(
     val title: String,
@@ -26,14 +27,16 @@ data class Category(
 
 
 @Composable
-fun CategoryItem(category: Category) {
+fun CategoryItem(category: Category, navController: NavController) {
 
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         modifier = Modifier
 //            .padding(14.dp)
             .clickable {
-                // TODO: Navigate to category products
+                navController.navigate(
+                    "allProducts?category=${android.net.Uri.encode(category.title)}&page=1"
+                )
             }
     ) {
 

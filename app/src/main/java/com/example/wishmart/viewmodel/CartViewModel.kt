@@ -115,4 +115,14 @@ class CartViewModel @Inject constructor(
             (it.sale_price ?: it.price) * it.qty
         }
     }
+
+    fun clearCart() = viewModelScope.launch {
+        try {
+            repository.clearCart() // call api/cart/clear
+            _uiState.value = CartUiState.Success(emptyList())
+        } catch (e: Exception) {
+            // fallback: still clear local
+            _uiState.value = CartUiState.Success(emptyList())
+        }
+    }
 }

@@ -1,5 +1,6 @@
 package com.example.wishmart.products.sale
 
+import com.example.wishmart.auth.OkResponse
 import retrofit2.http.Body
 import retrofit2.http.GET
 import retrofit2.http.HTTP
@@ -111,10 +112,13 @@ interface CartApi {
     suspend fun removeItem(
         @Body request: RemoveItemRequest
     ): ApiResponse
+
+    @POST("api/cart/clear")
+    suspend fun clearCart(): OkResponse
 }
 
 
-interface ProductApi {
+interface ProductsApi {
 
     @GET("api/products/sale")
     suspend fun getSaleProducts(): List<ProductResponse>

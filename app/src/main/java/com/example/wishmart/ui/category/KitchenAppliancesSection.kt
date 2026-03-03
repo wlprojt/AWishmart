@@ -1,6 +1,7 @@
 package com.example.wishmart.ui.category
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -48,7 +49,13 @@ fun KitchenAppliancesSection(
 
             Text(
                 text = "See more",
-                modifier = Modifier.padding(14.dp),
+                modifier = Modifier
+                    .padding(14.dp)
+                    .clickable{
+                        navController.navigate(
+                            "allProducts?category=${android.net.Uri.encode("Kitchen Appliances")}&page=1"
+                        )
+                    },
                 color = Color(0xFF2563EB)
             )
         }
